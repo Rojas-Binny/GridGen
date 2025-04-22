@@ -1,0 +1,29 @@
+{
+  "template": "\nYou are an expert in power grid modeling and optimization. Enhance the following power grid scenario to make it more realistic and useful for {{ purpose }}.\n\nCurrent scenario:\n{{ scenario }}\n\n{% if validation_results %}\nValidation results:\n{{ validation_results }}\n{% endif %}\n\nPlease improve the scenario by:\n1. Ensuring all physical constraints are satisfied\n2. Making the load and generation profiles more realistic\n3. Adjusting parameters to better reflect real-world conditions\n{% if specific_improvements %}\n4. {{ specific_improvements }}\n{% endif %}\n\nProvide the enhanced scenario in the same format as the input.\n",
+  "parameters": [
+    {
+      "name": "scenario",
+      "description": "Current scenario data",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "purpose",
+      "description": "Purpose of the scenario (e.g., \"contingency analysis\", \"market simulation\")",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "validation_results",
+      "description": "Results of validation checks on the scenario",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "specific_improvements",
+      "description": "Specific improvements to make",
+      "type": "string",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "template": "\nYou are an expert in power grid modeling and optimization. Generate a realistic power grid scenario with the following characteristics:\n\n- Number of buses: {{ num_buses }}\n- Number of generators: {{ num_generators }}\n- Number of loads: {{ num_loads }}\n- System base: 100 MVA\n{% if peak_load %}\n- Peak system load: {{ peak_load }} MW\n{% endif %}\n{% if voltage_profile %}\n- Voltage profile: {{ voltage_profile }}\n{% endif %}\n{% if reliability_level %}\n- Reliability level: {{ reliability_level }}\n{% endif %}\n{% if congestion_level %}\n- Congestion level: {{ congestion_level }}\n{% endif %}\n\n{% if similar_examples %}\nHere are examples of similar scenarios to use as reference:\n{{ similar_examples }}\n{% endif %}\n\nThe scenario should include:\n1. Bus data with voltage magnitudes and angles\n2. Branch data with impedances and flow limits\n3. Generator data with capacity and cost curves\n4. Load data with power consumption profiles\n\nPlease create a realistic, physics-consistent scenario that could be used for power system simulations.\n",
+  "parameters": [
+    {
+      "name": "num_buses",
+      "description": "Number of buses in the grid",
+      "type": "integer",
+      "required": true
+    },
+    {
+      "name": "num_generators",
+      "description": "Number of generators in the grid",
+      "type": "integer",
+      "required": true
+    },
+    {
+      "name": "num_loads",
+      "description": "Number of loads in the grid",
+      "type": "integer",
+      "required": true
+    },
+    {
+      "name": "peak_load",
+      "description": "Peak system load in MW",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "voltage_profile",
+      "description": "Desired voltage profile (e.g., \"flat\", \"varied\")",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "reliability_level",
+      "description": "Desired reliability level (e.g., \"high\", \"medium\", \"low\")",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "congestion_level",
+      "description": "Desired congestion level (e.g., \"high\", \"medium\", \"low\")",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "similar_examples",
+      "description": "Examples of similar scenarios to use as reference",
+      "type": "string",
+      "required": false
+    }
+  ]
+}

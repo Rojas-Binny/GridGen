@@ -47,8 +47,6 @@ yarn-error.log*
 Thumbs.db
 
 # Project specific
-data/
-models/
 *.dss
 temp_*
 
