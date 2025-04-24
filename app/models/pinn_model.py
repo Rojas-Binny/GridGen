@@ -315,26 +315,37 @@ class GridPINN(nn.Module):
             Loaded model
         """
         try:
-            # Load state dict with weights_only=True for safety
-            state_dict = torch.load(path, weights_only=True)
+            # Load state dict with weights_only=True for security
+            checkpoint = torch.load(path, weights_only=True)
             
-            # Create model instance with same architecture as saved model
+            # Extract model parameters from the checkpoint
+            input_dim = checkpoint.get('input_dim', 10)
+            hidden_dim = checkpoint.get('hidden_dim', 64)
+            output_dim = checkpoint.get('output_dim', 8)
+            num_layers = checkpoint.get('num_layers', 3)
+            
+            # Create model instance with the same architecture as saved model
             model = cls(
-                input_dim=state_dict.get('input_dim', 10),
-                hidden_dim=state_dict.get('hidden_dim', 64),
-                output_dim=state_dict.get('output_dim', 8),
-                num_layers=3,  # Default value
+                input_dim=input_dim,
+                hidden_dim=hidden_dim,
+                output_dim=output_dim,
+                num_layers=num_layers,
                 bus_data=bus_data,
                 line_data=line_data
             )
             
-            # Filter out unexpected keys from state dict
-            model_keys = set(model.state_dict().keys())
-            state_dict_filtered = {k: v for k, v in state_dict['model_state_dict'].items() if k in model_keys}
+            # Get the state dict
+            state_dict = checkpoint['model_state_dict']
             
-            # Load filtered state dict
-            model.load_state_dict(state_dict_filtered, strict=False)
-            logger.info("Model loaded successfully with architecture adaptation")
+            # Filter out unexpected keys (like line_flow_layer)
+            model_state_dict = model.state_dict()
+            filtered_state_dict = {k: v for k, v in state_dict.items() 
+                                 if k in model_state_dict and 
+                                 model_state_dict[k].shape == v.shape}
+            
+            # Load the filtered state dict
+            model.load_state_dict(filtered_state_dict, strict=False)
+            logger.info("Model loaded successfully with filtered state dict")
             
             return model
         except Exception as e:
@@ -349,7 +360,16 @@ class GridPINN(nn.Module):
         Args:
             path: Path to save model
         """
-        torch.save(self.state_dict(), path)
+        # Create a checkpoint dictionary with model parameters and state dict
+        checkpoint = {
+            'input_dim': self.network[0].in_features,
+            'hidden_dim': self.network[0].out_features,
+            'output_dim': self.network[-1].out_features,
+            'num_layers': len(self.network) // 2,  # Each layer has a Linear and ReLU
+            'model_state_dict': self.state_dict()
+        }
+        
+        torch.save(checkpoint, path)
 
 
 def train_pinn_model(

@@ -27,10 +27,16 @@ class OpenDSSService:
             
             if self.dss_path:
                 self.dss.Text.Command = f'Set DSSPath="{self.dss_path}"'
-                
-            # Create a new circuit to ensure proper initialization
+            
+            # Initialize a new circuit
             self.dss.Text.Command = 'Clear'
             self.dss.Text.Command = 'New Circuit.Default'
+            
+            # Set basic circuit parameters
+            self.dss.Text.Command = 'Set DefaultBaseFrequency=60'
+            self.dss.Text.Command = 'Set VoltageBases=[115, 12.47]'
+            self.dss.Text.Command = 'Set Mode=Snap'
+            self.dss.Text.Command = 'Set ControlMode=Static'
             
             logger.info("OpenDSS service initialized successfully")
         except Exception as e:
@@ -51,8 +57,20 @@ class OpenDSSService:
             # Create temporary OpenDSS script
             script_path = self._create_opendss_script(scenario)
             
+            # Clear existing circuit and create new one
+            self.dss.Text.Command = 'Clear'
+            self.dss.Text.Command = 'New Circuit.Scenario'
+            
             # Run OpenDSS simulation
             self.dss.Text.Command = f'Compile "{script_path}"'
+            
+            # Set solution parameters
+            self.dss.Text.Command = 'Set Mode=Snap'
+            self.dss.Text.Command = 'Set ControlMode=Static'
+            self.dss.Text.Command = 'Set MaxIterations=100'
+            self.dss.Text.Command = 'Set Tolerance=0.0001'
+            
+            # Solve the circuit
             self.dss.Text.Command = 'Solve'
             
             # Get simulation results
@@ -78,40 +96,52 @@ class OpenDSSService:
         """
         script_lines = []
         
+        # Log scenario structure for debugging
+        logger.info(f"Creating OpenDSS script for scenario: {json.dumps(scenario['network'].keys())}")
+        
         # Add base settings
         script_lines.extend([
             'Clear',
-            'New Circuit.Scenario',
+            'New Circuit.Scenario BasekV=115',  # Define base circuit with voltage
             'Set DefaultBaseFrequency=60',
-            'Set VoltageBases=[115, 12.47]',
-            'Set MaxControlIterations=100',
-            'Set MaxIterations=100'
+            'CalcVoltageBases',  # Calculate voltage bases
+            'Set Mode=Snap',
+            'Set ControlMode=OFF'  # Turn off controls for initial solution
         ])
         
-        # Add buses
-        for bus in scenario['network']['bus']:
-            script_lines.append(
-                f'New Bus.{bus["uid"]} '
-                f'BasekV={bus["base_nom_volt"]} '
-                f'kV={bus["initial_status"]["vm"]} '
-                f'Angle={bus["initial_status"]["va"]}'
-            )
+        # Debug log bus data
+        logger.info(f"Bus data structure: {json.dumps(scenario['network']['bus'][0]) if scenario['network']['bus'] else 'No buses'}")
         
+        # Add buses - Add nodes to existing circuit
+        for bus in scenario['network']['bus']:
+            bus_id = bus["uid"]
+            base_kv = bus.get("base_nom_volt", 115.0)  # Default to 115 kV if not specified
+            
+            # Basic bus definition with the circuit already established
+            script_lines.append(f'New Load.Load_{bus_id} Bus1={bus_id} kV={base_kv} kW=0.001 kvar=0 phases=3')
+            
         # Add lines
         for line in scenario['network']['ac_line']:
+            fr_bus = line["fr_bus"]
+            to_bus = line["to_bus"]
+            r = line.get("r", 0.01)
+            x = line.get("x", 0.1)
+            b = line.get("b", 0.01)
+            norm_amps = line.get("mva_ub_nom", 100)
+            
             script_lines.append(
                 f'New Line.{line["uid"]} '
-                f'Bus1={line["fr_bus"]} '
-                f'Bus2={line["to_bus"]} '
-                f'R1={line["r"]} '
-                f'X1={line["x"]} '
-                f'B1={line["b"]} '
-                f'NormAmps={line["mva_ub_nom"]} '
-                f'EmergAmps={line["mva_ub_em"]}'
+                f'Bus1={fr_bus} '
+                f'Bus2={to_bus} '
+                f'R1={r} '
+                f'X1={x} '
+                f'B1={b} '
+                f'Phases=3 '
+                f'NormAmps={norm_amps}'
             )
         
         # Add transformers
-        for xfmr in scenario['network']['two_winding_transformer']:
+        for xfmr in scenario['network'].get('two_winding_transformer', []):
             script_lines.append(
                 f'New Transformer.{xfmr["uid"]} '
                 f'Bus1={xfmr["fr_bus"]} '
@@ -126,29 +156,52 @@ class OpenDSSService:
         # Add generators
         for gen in scenario['network']['simple_dispatchable_device']:
             if gen['device_type'] == 'producer':
+                bus_id = gen["bus"]
+                kw = gen["initial_status"].get("p", 100) * 1000  # Convert to kW
+                kvar = gen["initial_status"].get("q", 20) * 1000  # Convert to kVAR
+                kv = gen.get("vg", 1.0) * 115  # Use voltage in kV
+                
                 script_lines.append(
                     f'New Generator.{gen["uid"]} '
-                    f'Bus1={gen["bus"]} '
-                    f'kV={gen["initial_status"]["p"]} '
-                    f'kW={gen["initial_status"]["p"]} '
-                    f'kvar={gen["initial_status"]["q"]}'
+                    f'Bus1={bus_id} '
+                    f'kV={kv} '
+                    f'kW={kw} '
+                    f'kvar={kvar} '
+                    f'Model=3'  # Constant PQ model
                 )
         
         # Add loads
         for load in scenario['network']['simple_dispatchable_device']:
             if load['device_type'] == 'consumer':
+                bus_id = load["bus"]
+                kw = load["initial_status"].get("p", 100) * 1000  # Convert to kW
+                kvar = load["initial_status"].get("q", 20) * 1000  # Convert to kVAR
+                
                 script_lines.append(
                     f'New Load.{load["uid"]} '
-                    f'Bus1={load["bus"]} '
-                    f'kV={load["initial_status"]["p"]} '
-                    f'kW={load["initial_status"]["p"]} '
-                    f'kvar={load["initial_status"]["q"]}'
+                    f'Bus1={bus_id} '
+                    f'kW={kw} '
+                    f'kvar={kvar} '
+                    f'Model=1'  # Constant power load model
                 )
+        
+        # Add solution commands
+        script_lines.extend([
+            'Set VoltageBases=[115, 13.8]',
+            'CalcVoltageBases',
+            'Solve',
+            'Show Voltages LN Nodes',
+            'Show Currents Elements',
+            'Show Powers kVA Elements'
+        ])
         
         # Save script to temporary file
         script_path = 'temp_scenario.dss'
         with open(script_path, 'w') as f:
             f.write('\n'.join(script_lines))
+        
+        # Log the script for debugging
+        logger.info(f"Generated OpenDSS script saved to {script_path}")
         
         return script_path
     
