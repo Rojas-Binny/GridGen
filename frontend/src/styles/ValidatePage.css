@@ -169,8 +169,9 @@
 }
 
 .alert-danger {
-  border-color: #DC3545;
-  color: #DC3545;
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+  background-color: rgba(255, 77, 77, 0.1);
 }
 
 .alert-warning {

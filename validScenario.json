@@ -1,0 +1,149 @@
+{
+  "scenario_id": "valid_scenario_01",
+  "name": "4-Bus Test System",
+  "description": "A balanced 4-bus power system with reliable parameters",
+  "network": {
+    "base_mva": 100,
+    "bus": [
+      {
+        "bus_id": "Bus1",
+        "type": "SLACK",
+        "area": 1,
+        "vm": 1.05,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9
+      },
+      {
+        "bus_id": "Bus2",
+        "type": "PV",
+        "area": 1,
+        "vm": 1.04,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9
+      },
+      {
+        "bus_id": "Bus3",
+        "type": "PQ",
+        "area": 1,
+        "vm": 1.0,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9
+      },
+      {
+        "bus_id": "Bus4",
+        "type": "PQ",
+        "area": 1,
+        "vm": 1.0,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9
+      }
+    ],
+    "ac_line": [
+      {
+        "from_bus": "Bus1",
+        "to_bus": "Bus2",
+        "r": 0.01,
+        "x": 0.1,
+        "b": 0.02,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1
+      },
+      {
+        "from_bus": "Bus1",
+        "to_bus": "Bus3",
+        "r": 0.01,
+        "x": 0.12,
+        "b": 0.02,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1
+      },
+      {
+        "from_bus": "Bus2",
+        "to_bus": "Bus4",
+        "r": 0.015,
+        "x": 0.15,
+        "b": 0.03,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1
+      },
+      {
+        "from_bus": "Bus3",
+        "to_bus": "Bus4",
+        "r": 0.012,
+        "x": 0.12,
+        "b": 0.025,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1
+      }
+    ],
+    "generator": [
+      {
+        "gen_id": "Gen1",
+        "bus_id": "Bus1",
+        "pg": 200.0,
+        "qg": 50.0,
+        "qmax": 100.0,
+        "qmin": -100.0,
+        "vg": 1.05,
+        "status": 1,
+        "pmax": 300.0,
+        "pmin": 50.0
+      },
+      {
+        "gen_id": "Gen2",
+        "bus_id": "Bus2",
+        "pg": 100.0,
+        "qg": 30.0,
+        "qmax": 75.0,
+        "qmin": -75.0,
+        "vg": 1.04,
+        "status": 1,
+        "pmax": 150.0,
+        "pmin": 20.0
+      }
+    ],
+    "load": [
+      {
+        "load_id": "Load1",
+        "bus_id": "Bus3",
+        "pd": 150.0,
+        "qd": 30.0,
+        "status": 1
+      },
+      {
+        "load_id": "Load2",
+        "bus_id": "Bus4",
+        "pd": 120.0,
+        "qd": 25.0,
+        "status": 1
+      }
+    ]
+  },
+  "metadata": {
+    "creation_date": "2023-07-15",
+    "version": "1.0",
+    "reliability_level": "high",
+    "congestion_level": "low",
+    "voltage_profile": "flat"
+  }
+} 

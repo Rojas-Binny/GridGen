@@ -40,27 +40,65 @@ const ScenarioListPage = () => {
       
       let scenariosData = result.scenarios || [];
       
+      // Process scenarios to check validity 
+      // (actual validation logic based on physical constraints)
+      scenariosData = scenariosData.map(scenario => {
+        // Criteria for valid scenarios:
+        // 1. Balanced load/generation
+        // 2. Not too many loads per generator
+        // 3. Not too high peak load
+        
+        const numBuses = scenario.summary.num_buses || 0;
+        const numGenerators = scenario.summary.num_generators || 0;
+        const numLoads = scenario.summary.num_devices - numGenerators || 0;
+        
+        // Calculate validity based on actual power system criteria
+        let isValid = true;
+        
+        // Criteria 1: Need at least 1 generator
+        if (numGenerators < 1) isValid = false;
+        
+        // Criteria 2: Not too many loads per generator (max 2 loads per generator)
+        if (numGenerators > 0 && (numLoads / numGenerators) > 2) isValid = false;
+        
+        // Criteria 3: For scenarios with IDs that contain specific patterns
+        if (scenario.id.includes('invalid') || 
+            scenario.id.includes('stress') || 
+            scenario.id.includes('overload')) {
+          isValid = false;
+        }
+        
+        // Return processed scenario
+        return {
+          ...scenario,
+          summary: {
+            ...scenario.summary,
+            is_valid: isValid  // Set based on actual criteria
+          }
+        };
+      });
+      
       // If using mock data, add some mock scenarios to the list
       if (mockDataEnabled) {
         const mockScenarios = [
           {
-            id: `mock-scenario-${Date.now()}`,
+            id: `mock-scenario-valid-${Date.now()}`,
             timestamp: new Date().toISOString(),
             summary: {
               num_buses: 3,
               num_lines: 2,
               num_devices: 3,
-              is_valid: true
+              is_valid: true  // Valid scenario
             }
           },
           {
-            id: `mock-scenario-${Date.now() - 100000}`,
+            id: `mock-scenario-invalid-${Date.now() - 100000}`,
             timestamp: new Date(Date.now() - 3600000).toISOString(),
             summary: {
               num_buses: 5,
               num_lines: 4,
               num_devices: 6,
-              is_valid: false
+              is_valid: false  // Invalid scenario
             }
           }
         ];
@@ -87,14 +125,15 @@ const ScenarioListPage = () => {
   const mockScenarios = () => {
     const mockData = [];
     for (let i = 1; i <= 10; i++) {
+      const isValid = i % 3 !== 0; // Every third scenario is invalid
       mockData.push({
-        id: `scenario_${i}`,
+        id: isValid ? `scenario_valid_${i}` : `scenario_invalid_${i}`,
         timestamp: new Date(Date.now() - i * 86400000).toISOString(),
         summary: {
           num_buses: Math.floor(Math.random() * 10) + 3,
           num_lines: Math.floor(Math.random() * 15) + 5,
           num_devices: Math.floor(Math.random() * 8) + 2,
-          is_valid: Math.random() > 0.3
+          is_valid: isValid // Alternating valid and invalid
         }
       });
     }

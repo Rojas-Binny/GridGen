@@ -11,13 +11,12 @@ import {
   ProgressBar,
   Tabs,
   Tab,
-  Spinner,
 } from 'react-bootstrap';
 import { Sliders, Grid, Database, Check } from 'react-feather';
 import ApiService from '../services/ApiService';
 import '../styles/GeneratePage.css';
-import { useMockData } from '../components/MockDataProvider';
 import { useMockDataContext } from '../components/MockDataProvider';
+import ErrorMessage from '../components/ErrorMessage';
 
 
 const GeneratePage = () => {
@@ -370,20 +369,13 @@ const GeneratePage = () => {
         </div>
       </div>
 
-      {/* Error / Spinner ---------------------------------------------- */}
+      {/* Show error message if any */}
       {error && (
-        <Alert variant="danger" className="mt-4">
-          <Alert.Heading>Error</Alert.Heading>
-          <p>{error}</p>
-        </Alert>
-      )}
-      {isGenerating && (
-        <div className="text-center mt-4">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
-          <p className="mt-2">Please wait while we generate your scenario...</p>
-        </div>
+        <ErrorMessage 
+          error={error} 
+          onRetry={() => setError(null)} 
+          onBack={() => navigate('/scenarios')}
+        />
       )}
     </div>
   );

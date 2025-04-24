@@ -16,7 +16,6 @@ import GeneratePage from './pages/GeneratePage';
 import ScenarioListPage from './pages/ScenarioListPage';
 import ScenarioDetailPage from './pages/ScenarioDetailPage';
 import ValidatePage from './pages/ValidatePage';
-import AboutPage from './pages/AboutPage';
 
 const App = () => {
   return (
@@ -32,7 +31,6 @@ const App = () => {
                 <Route path="/scenarios" element={<ScenarioListPage />} />
                 <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />
                 <Route path="/validate" element={<ValidatePage />} />
-                <Route path="/about" element={<AboutPage />} />
               </Routes>
             </Container>
           </main>

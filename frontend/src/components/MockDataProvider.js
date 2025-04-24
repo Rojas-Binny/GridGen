@@ -8,8 +8,8 @@ const MockDataContext = createContext();
 export const useMockDataContext = () => useContext(MockDataContext);
 
 export const MockDataProvider = ({ children }) => {
-  // Rename this state variable to avoid the conflict
-  const [mockDataEnabled, setMockDataEnabled] = useState(false);
+  // Always set mock data to false
+  const [mockDataEnabled] = useState(false);
   
   const generateMockScenario = (parameters) => {
     return {
@@ -52,9 +52,9 @@ export const MockDataProvider = ({ children }) => {
   const mockValidateScenario = (scenarioId) => {
     return {
       scenario_id: scenarioId,
-      is_valid: Math.random() > 0.3, // 70% chance of being valid
+      is_valid: true, // Always valid
       physics_validation: {
-        is_valid: Math.random() > 0.3,
+        is_valid: true,
         voltage_violations: [],
         line_violations: []
       },
@@ -69,7 +69,7 @@ export const MockDataProvider = ({ children }) => {
   
   const value = {
     mockDataEnabled,
-    setMockDataEnabled,
+    setMockDataEnabled: () => {}, // No-op function
     generateMockScenario,
     mockValidateScenario
   };

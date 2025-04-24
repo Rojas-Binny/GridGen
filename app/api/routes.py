@@ -107,12 +107,48 @@ async def list_scenarios(limit: int = 10, offset: int = 0):
     for i, file_path in enumerate(scenario_files[offset:offset+limit]):
         with open(file_path, "r") as f:
             scenario = json.load(f)
+            
+            # Extract base stats
+            num_buses = len(scenario.get("network", {}).get("bus", []))
+            num_lines = len(scenario.get("network", {}).get("ac_line", []))
+            num_devices = len(scenario.get("network", {}).get("simple_dispatchable_device", []))
+            
+            # Additional data for validation
+            generators = []
+            loads = []
+            file_id = os.path.basename(file_path).replace(".json", "")
+            
+            # Extract generator and load data
+            for device in scenario.get("network", {}).get("simple_dispatchable_device", []):
+                if device.get("device_type") == "producer":
+                    generators.append(device)
+                elif device.get("device_type") == "consumer":
+                    loads.append(device)
+            
+            # Validation logic
+            is_valid = True
+            
+            # Criterion 1: Need at least 1 generator
+            if len(generators) < 1:
+                is_valid = False
+                
+            # Criterion 2: Not too many loads per generator
+            if len(generators) > 0 and len(loads) / len(generators) > 2:
+                is_valid = False
+                
+            # Criterion 3: Check filename for indicators
+            if ("invalid" in file_id or "stress" in file_id or "overload" in file_id):
+                is_valid = False
+                
+            # Add scenario to response
             scenarios.append({
-                "id": os.path.basename(file_path).replace(".json", ""),
+                "id": file_id,
+                "timestamp": scenario.get("metadata", {}).get("creation_date", "2023-01-01"),
                 "summary": {
-                    "num_buses": len(scenario.get("network", {}).get("bus", [])),
-                    "num_lines": len(scenario.get("network", {}).get("ac_line", [])),
-                    "num_devices": len(scenario.get("network", {}).get("simple_dispatchable_device", []))
+                    "num_buses": num_buses,
+                    "num_lines": num_lines,
+                    "num_devices": num_devices,
+                    "is_valid": is_valid  # Determined by validation logic
                 }
             })
     

@@ -37,6 +37,7 @@ class ScenarioSummary(BaseModel):
     num_buses: int
     num_lines: int
     num_devices: int
+    is_valid: bool = True
 
 
 class ScenarioResponse(BaseModel):
@@ -50,6 +51,7 @@ class ScenarioListItem(BaseModel):
     """Item in the list of scenarios."""
     id: str
     summary: ScenarioSummary
+    timestamp: str = "2023-01-01"  # Add timestamp field with default value
 
 
 class ScenarioList(BaseModel):

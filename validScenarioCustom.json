@@ -1,0 +1,235 @@
+{
+  "scenario_id": "valid_scenario_custom",
+  "name": "4-Bus Balanced System",
+  "description": "A balanced 4-bus power system with valid parameters",
+  "network": {
+    "base_mva": 100,
+    "bus": [
+      {
+        "bus_id": "Bus1",
+        "type": "SLACK",
+        "area": 1,
+        "vm": 1.0,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9,
+        "vm_lb": 0.95,
+        "vm_ub": 1.05,
+        "initial_status": {
+          "vm": 1.0,
+          "va": 0.0
+        }
+      },
+      {
+        "bus_id": "Bus2",
+        "type": "PV",
+        "area": 1,
+        "vm": 1.0,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9,
+        "vm_lb": 0.95,
+        "vm_ub": 1.05,
+        "initial_status": {
+          "vm": 1.0,
+          "va": 0.0
+        }
+      },
+      {
+        "bus_id": "Bus3",
+        "type": "PQ",
+        "area": 1,
+        "vm": 1.0,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9,
+        "vm_lb": 0.95,
+        "vm_ub": 1.05,
+        "initial_status": {
+          "vm": 1.0,
+          "va": 0.0
+        }
+      },
+      {
+        "bus_id": "Bus4",
+        "type": "PQ",
+        "area": 1,
+        "vm": 1.0,
+        "va": 0.0,
+        "base_kv": 230.0,
+        "zone": 1,
+        "vmax": 1.1,
+        "vmin": 0.9,
+        "vm_lb": 0.95,
+        "vm_ub": 1.05,
+        "initial_status": {
+          "vm": 1.0,
+          "va": 0.0
+        }
+      }
+    ],
+    "ac_line": [
+      {
+        "uid": "Line1-2",
+        "fr_bus": "Bus1",
+        "to_bus": "Bus2",
+        "r": 0.01,
+        "x": 0.1,
+        "b": 0.02,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1,
+        "mva_ub_nom": 300.0,
+        "initial_status": {
+          "on_status": 1
+        }
+      },
+      {
+        "uid": "Line1-3",
+        "fr_bus": "Bus1",
+        "to_bus": "Bus3",
+        "r": 0.01,
+        "x": 0.12,
+        "b": 0.02,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1,
+        "mva_ub_nom": 300.0,
+        "initial_status": {
+          "on_status": 1
+        }
+      },
+      {
+        "uid": "Line2-4",
+        "fr_bus": "Bus2",
+        "to_bus": "Bus4",
+        "r": 0.015,
+        "x": 0.15,
+        "b": 0.03,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1,
+        "mva_ub_nom": 300.0,
+        "initial_status": {
+          "on_status": 1
+        }
+      },
+      {
+        "uid": "Line3-4",
+        "fr_bus": "Bus3",
+        "to_bus": "Bus4",
+        "r": 0.012,
+        "x": 0.12,
+        "b": 0.025,
+        "rate_a": 250.0,
+        "rate_b": 300.0,
+        "rate_c": 350.0,
+        "status": 1,
+        "mva_ub_nom": 300.0,
+        "initial_status": {
+          "on_status": 1
+        }
+      }
+    ],
+    "simple_dispatchable_device": [
+      {
+        "uid": "Gen1",
+        "bus": "Bus1",
+        "device_type": "producer",
+        "pg": 175.0,
+        "qg": 30.0,
+        "qmax": 100.0,
+        "qmin": -100.0,
+        "vg": 1.0,
+        "status": 1,
+        "pmax": 250.0,
+        "pmin": 50.0,
+        "initial_status": {
+          "p": 0.7,
+          "q": 0.2
+        }
+      },
+      {
+        "uid": "Gen2",
+        "bus": "Bus2",
+        "device_type": "producer",
+        "pg": 100.0,
+        "qg": 20.0,
+        "qmax": 75.0,
+        "qmin": -75.0,
+        "vg": 1.0,
+        "status": 1,
+        "pmax": 150.0,
+        "pmin": 20.0,
+        "initial_status": {
+          "p": 0.4,
+          "q": 0.1
+        }
+      },
+      {
+        "uid": "Load1",
+        "bus": "Bus3",
+        "device_type": "consumer",
+        "pd": 100.0,
+        "qd": 20.0,
+        "status": 1,
+        "initial_status": {
+          "p": 0.4,
+          "q": 0.08
+        }
+      },
+      {
+        "uid": "Load2",
+        "bus": "Bus4",
+        "device_type": "consumer",
+        "pd": 150.0,
+        "qd": 25.0,
+        "status": 1,
+        "initial_status": {
+          "p": 0.6,
+          "q": 0.1
+        }
+      }
+    ],
+    "shunt": [
+      {
+        "uid": "sh_1",
+        "bus": "Bus3",
+        "gs": 0,
+        "bs": 0.05,
+        "step_lb": 0,
+        "step_ub": 1,
+        "initial_status": {
+          "step": 1
+        }
+      },
+      {
+        "uid": "sh_2",
+        "bus": "Bus4",
+        "gs": 0,
+        "bs": 0.05,
+        "step_lb": 0,
+        "step_ub": 1,
+        "initial_status": {
+          "step": 1
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "creation_date": "2023-08-01",
+    "version": "1.0",
+    "reliability_level": "high",
+    "congestion_level": "low",
+    "voltage_profile": "flat"
+  }
+} 

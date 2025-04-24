@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner, Tab, Tabs } from 'react-bootstrap';
 import { Upload, CheckCircle, XCircle, AlertTriangle, File, FileText } from 'react-feather';
 import ApiService from '../services/ApiService';
 import '../styles/ValidatePage.css';
+import ErrorMessage from '../components/ErrorMessage';
 
 const ValidatePage = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -290,13 +293,13 @@ const ValidatePage = () => {
         </Tab>
       </Tabs>
       
+      {/* Show error message if any */}
       {error && (
-        <Alert variant="danger" className="mb-4">
-          <div className="d-flex align-items-center">
-            <AlertTriangle size={20} className="me-2" />
-            <span>{error}</span>
-          </div>
-        </Alert>
+        <ErrorMessage 
+          error={error} 
+          onRetry={() => setError(null)} 
+          onBack={() => navigate('/scenarios')}
+        />
       )}
       
       {validationResult && (

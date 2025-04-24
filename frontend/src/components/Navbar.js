@@ -2,8 +2,8 @@
 // Update the imports at the top to include Form
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Navbar as BootstrapNavbar, Nav, Container, Button, Form } from 'react-bootstrap';
-import { Zap, Grid, List, Database, Info, Menu, X } from 'react-feather';
+import { Navbar as BootstrapNavbar, Nav, Container, Button } from 'react-bootstrap';
+import { Zap, Grid, List, Database, Menu, X } from 'react-feather';
 import { useMockDataContext } from '../components/MockDataProvider';
 import '../styles/Navbar.css';
 
@@ -12,8 +12,6 @@ const Navbar = () => {
   const [expanded, setExpanded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { mockDataEnabled, setMockDataEnabled } = useMockDataContext();
-
-
 
   // Handle scroll effect
   useEffect(() => {
@@ -100,30 +98,9 @@ const Navbar = () => {
               <List size={18} className="nav-icon" />
               <span>Validate</span>
             </Nav.Link>
-            
-            <Nav.Link 
-              as={Link} 
-              to="/about" 
-              className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
-            >
-              <Info size={18} className="nav-icon" />
-              <span>About</span>
-            </Nav.Link>
           </Nav>
           
           <div className="d-flex">
-
-          <Form className="me-3">
-              <Form.Check 
-                type="switch"
-                id="mock-data-switch"
-                label="Use Mock Data"
-                checked={mockDataEnabled}
-                onChange={(e) => setMockDataEnabled(e.target.checked)}
-                className="text-gold"
-              />
-            </Form>
-
             <Button 
               as={Link}
               to="/generate"
