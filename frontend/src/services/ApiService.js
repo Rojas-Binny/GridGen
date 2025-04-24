@@ -48,50 +48,114 @@ const ApiService = {
   },
   
   /**
+   * Parse scenario text input to extract parameters
+   * 
+   * @param {string} text - Natural language description of the scenario
+   * @returns {Promise<Object>} Extracted parameters
+   */
+  async parseScenarioText(text) {
+    try {
+      console.log('Parsing scenario text:', text);
+      
+      // Send the text to the backend for prompt tuning and parameter extraction
+      const response = await api.post('/scenarios/parse-text', { text });
+      console.log('Parse response:', response.data);
+      return response.data.parameters;
+    } catch (error) {
+      console.error('Error parsing scenario text:', error);
+      
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      
+      // Fallback to basic parsing if API call fails
+      return this._fallbackTextParsing(text);
+    }
+  },
+  
+  /**
+   * Fallback method for text parsing when API is unavailable
+   * 
+   * @private
+   * @param {string} text - Natural language description of the scenario
+   * @returns {Object} Extracted parameters
+   */
+  _fallbackTextParsing(text) {
+    console.log('Using fallback text parsing');
+    
+    // Extract values using simple pattern matching
+    const parsedParams = {
+      num_buses: text.match(/(\d+)\s+bus(es)?/i) ? parseInt(text.match(/(\d+)\s+bus(es)?/i)[1]) : 2,
+      num_generators: text.match(/(\d+)\s+generator/i) ? parseInt(text.match(/(\d+)\s+generator/i)[1]) : 1,
+      num_loads: text.match(/(\d+)\s+load/i) ? parseInt(text.match(/(\d+)\s+load/i)[1]) : 1,
+      peak_load: text.match(/(\d+)\s+MW/i) ? parseInt(text.match(/(\d+)\s+MW/i)[1]) : 10,
+    };
+
+    // Determine voltage profile
+    if (text.match(/flat\s+voltage/i)) parsedParams.voltage_profile = 'flat';
+    else if (text.match(/varied\s+voltage/i)) parsedParams.voltage_profile = 'varied';
+    else if (text.match(/stressed\s+voltage/i)) parsedParams.voltage_profile = 'stressed';
+
+    // Determine reliability level
+    if (text.match(/high\s+reliability/i)) parsedParams.reliability_level = 'high';
+    else if (text.match(/medium\s+reliability/i)) parsedParams.reliability_level = 'medium';
+    else if (text.match(/low\s+reliability/i)) parsedParams.reliability_level = 'low';
+
+    // Determine congestion level
+    if (text.match(/high\s+congestion/i)) parsedParams.congestion_level = 'high';
+    else if (text.match(/medium\s+congestion/i)) parsedParams.congestion_level = 'medium';
+    else if (text.match(/low\s+congestion/i)) parsedParams.congestion_level = 'low';
+
+    return parsedParams;
+  },
+  
+  /**
    * Generate a new scenario
    * 
    * @param {Object} parameters - Generation parameters
    * @returns {Promise<Object>} Generated scenario
    */
-// frontend/src/services/ApiService.js
-
-// In ApiService.js
-async generateScenario(parameters) {
-  try {
-    console.log('Sending parameters to API:', parameters);
-    
-    // Structure the request according to what the backend expects
-    const requestData = {
-      parameters,
-      include_context: parameters.include_context !== undefined ? parameters.include_context : true,
-      similarity_threshold: parameters.similarity_threshold || 0.7
-    };
-    
-    console.log('Structured request data:', requestData);
-    
-    const response = await api.post('/scenarios/generate', requestData);
-    console.log('API response:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Error generating scenario:', error);
-    
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error('Response data:', error.response.data);
-      console.error('Response status:', error.response.status);
-      console.error('Response headers:', error.response.headers);
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error('No response received:', error.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error('Error message:', error.message);
+  async generateScenario(parameters) {
+    try {
+      console.log('Sending parameters to API:', parameters);
+      
+      // Structure the request according to what the backend expects
+      const requestData = {
+        parameters,
+        include_context: parameters.include_context !== undefined ? parameters.include_context : true,
+        similarity_threshold: parameters.similarity_threshold || 0.7
+      };
+      
+      console.log('Structured request data:', requestData);
+      
+      const response = await api.post('/scenarios/generate', requestData);
+      console.log('API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error generating scenario:', error);
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+      }
+      
+      throw error;
     }
-    
-    throw error;
-  }
-},
+  },
   
   /**
    * Validate a scenario
@@ -99,7 +163,6 @@ async generateScenario(parameters) {
    * @param {string} scenarioId - Scenario ID to validate
    * @returns {Promise<Object>} Validation results
    */
-
   async validateScenario(scenarioId, scenarioData = null) {
     try {
       // If we have direct scenario data

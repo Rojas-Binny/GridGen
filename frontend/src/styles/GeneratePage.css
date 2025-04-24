@@ -53,6 +53,46 @@
     cursor: not-allowed;
   }
   
+  /* Input Mode Selector */
+  .input-mode-selector {
+    background: rgba(40, 40, 40, 0.7);
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    margin-bottom: 1.5rem;
+  }
+  
+  .input-mode-selector .form-check-label {
+    color: var(--primary-gold-light);
+    font-weight: 500;
+  }
+  
+  /* Text Input Area */
+  .generate-page textarea.form-control {
+    min-height: 100px;
+    background-color: rgba(51, 51, 51, 0.8);
+    border: 1px solid var(--light-gray);
+    color: var(--off-white);
+    padding: 0.8rem;
+    line-height: 1.5;
+    font-size: 1rem;
+    resize: vertical;
+  }
+  
+  .generate-page textarea.form-control:focus {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+    background-color: rgba(51, 51, 51, 0.9);
+  }
+  
+  /* Parameter Details Section */
+  .parameter-details {
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    transition: all var(--transition-medium);
+  }
+  
   /* Form styling */
   .generate-page .card {
     margin-bottom: 2rem;

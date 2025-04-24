@@ -12,7 +12,7 @@ import {
   Tabs,
   Tab,
 } from 'react-bootstrap';
-import { Sliders, Grid, Database, Check } from 'react-feather';
+import { Sliders, Grid, Database, Check, MessageSquare } from 'react-feather';
 import ApiService from '../services/ApiService';
 import '../styles/GeneratePage.css';
 import { useMockDataContext } from '../components/MockDataProvider';
@@ -31,6 +31,9 @@ const GeneratePage = () => {
   const [activeTab, setActiveTab] = useState('parameters');
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [textInput, setTextInput] = useState('');
+  const [isTextInputMode, setIsTextInputMode] = useState(true);
+  const [isParsingText, setIsParsingText] = useState(false);
   const [parameters, setParameters] = useState({
     num_buses: 2,
     num_generators: 1,
@@ -52,6 +55,65 @@ const GeneratePage = () => {
     }));
   };
 
+  const handleTextInputChange = (e) => {
+    setTextInput(e.target.value);
+  };
+
+  const parseTextInput = async () => {
+    setIsParsingText(true);
+    try {
+      // Call API to parse text input using prompt tuning
+      const parsedParams = mockDataEnabled
+        ? mockParseTextInput(textInput)
+        : await ApiService.parseScenarioText(textInput);
+
+      // Update parameters with parsed values
+      setParameters(prev => ({
+        ...prev,
+        ...parsedParams
+      }));
+
+      return parsedParams;
+    } catch (err) {
+      setError("Failed to parse text input: " + (err.message || "Unknown error"));
+      return null;
+    } finally {
+      setIsParsingText(false);
+    }
+  };
+
+  // Mock function for demo purposes
+  const mockParseTextInput = (text) => {
+    // Simulates parsing text into parameters
+    console.log("Parsing text:", text);
+    
+    // Extract values using simple pattern matching (this is a mock)
+    // In a real implementation, this would use more sophisticated NLP or prompt tuning
+    const parsedParams = {
+      num_buses: text.match(/(\d+)\s+bus(es)?/i) ? parseInt(text.match(/(\d+)\s+bus(es)?/i)[1]) : 2,
+      num_generators: text.match(/(\d+)\s+generator/i) ? parseInt(text.match(/(\d+)\s+generator/i)[1]) : 1,
+      num_loads: text.match(/(\d+)\s+load/i) ? parseInt(text.match(/(\d+)\s+load/i)[1]) : 1,
+      peak_load: text.match(/(\d+)\s+MW/i) ? parseInt(text.match(/(\d+)\s+MW/i)[1]) : 10,
+    };
+
+    // Determine voltage profile
+    if (text.match(/flat\s+voltage/i)) parsedParams.voltage_profile = 'flat';
+    else if (text.match(/varied\s+voltage/i)) parsedParams.voltage_profile = 'varied';
+    else if (text.match(/stressed\s+voltage/i)) parsedParams.voltage_profile = 'stressed';
+
+    // Determine reliability level
+    if (text.match(/high\s+reliability/i)) parsedParams.reliability_level = 'high';
+    else if (text.match(/medium\s+reliability/i)) parsedParams.reliability_level = 'medium';
+    else if (text.match(/low\s+reliability/i)) parsedParams.reliability_level = 'low';
+
+    // Determine congestion level
+    if (text.match(/high\s+congestion/i)) parsedParams.congestion_level = 'high';
+    else if (text.match(/medium\s+congestion/i)) parsedParams.congestion_level = 'medium';
+    else if (text.match(/low\s+congestion/i)) parsedParams.congestion_level = 'low';
+
+    return parsedParams;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -60,17 +122,29 @@ const GeneratePage = () => {
     setProgress(10);
     setActiveTab('progress');
 
-    // Convert string values to numbers where needed
-    const payload = {
-      ...parameters,
-      num_buses: Number(parameters.num_buses),
-      num_generators: Number(parameters.num_generators),
-      num_loads: Number(parameters.num_loads),
-      peak_load: Number(parameters.peak_load),
-      similarity_threshold: Number(parameters.similarity_threshold),
-    };
-
     try {
+      // If using text input, parse it first
+      let finalParams = { ...parameters };
+      if (isTextInputMode && textInput.trim()) {
+        const parsedParams = await parseTextInput();
+        if (parsedParams) {
+          finalParams = { ...finalParams, ...parsedParams };
+        } else {
+          // If parsing failed but we want to continue anyway, use current parameters
+          console.log("Using fallback parameters");
+        }
+      }
+
+      // Convert string values to numbers where needed
+      const payload = {
+        ...finalParams,
+        num_buses: Number(finalParams.num_buses),
+        num_generators: Number(finalParams.num_generators),
+        num_loads: Number(finalParams.num_loads),
+        peak_load: Number(finalParams.peak_load),
+        similarity_threshold: Number(finalParams.similarity_threshold),
+      };
+
       // Simulate progress -----------------------------------------------
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
@@ -111,139 +185,192 @@ const GeneratePage = () => {
   // Render helpers -------------------------------------------------------
   const renderParametersTab = () => (
     <Form onSubmit={handleSubmit}>
-      {/* Network Parameters -------------------------------------------- */}
-      <Card className="mb-4">
-        <Card.Header className="d-flex align-items-center">
-          <Grid className="me-2" size={20} />
-          <span>Network Parameters</span>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            {/* Buses ----------------------------------------------------- */}
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Number of Buses</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="num_buses"
-                  min="2"
-                  max="10"
-                  value={parameters.num_buses}
-                  onChange={handleChange}
-                  required
-                />
-                <Form.Text className="text-muted">Between 2 and 10 buses</Form.Text>
-              </Form.Group>
-            </Col>
+      {/* Input Mode Selector */}
+      <div className="input-mode-selector mb-4">
+        <div className="d-flex align-items-center mb-3">
+          <Form.Check
+            type="switch"
+            id="input-mode-switch"
+            label="Use Text Input"
+            checked={isTextInputMode}
+            onChange={() => setIsTextInputMode(!isTextInputMode)}
+            className="me-3"
+          />
+        </div>
+      </div>
 
-            {/* Generators ---------------------------------------------- */}
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Number of Generators</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="num_generators"
-                  min="1"
-                  max="5"
-                  value={parameters.num_generators}
-                  onChange={handleChange}
-                  required
-                />
-                <Form.Text className="text-muted">Between 1 and 5 generators</Form.Text>
-              </Form.Group>
-            </Col>
+      {/* Text Input Mode */}
+      {isTextInputMode && (
+        <Card className="mb-4">
+          <Card.Header className="d-flex align-items-center">
+            <MessageSquare className="me-2" size={20} />
+            <span>Scenario Description</span>
+          </Card.Header>
+          <Card.Body>
+            <Form.Group>
+              <Form.Label>Describe the grid scenario you want to generate</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                value={textInput}
+                onChange={handleTextInputChange}
+                placeholder="Example: Generate a power grid with 3 buses, 2 generators, and 2 loads with a peak load of 15 MW. Use a varied voltage profile with medium reliability and low congestion."
+              />
+              <Form.Text className="text-muted">
+                Describe the scenario in natural language. Mention parameters like number of buses, generators, loads, peak load, voltage profile, reliability, and congestion levels.
+              </Form.Text>
+            </Form.Group>
 
-            {/* Loads ---------------------------------------------------- */}
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Number of Loads</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="num_loads"
-                  min="1"
-                  max="5"
-                  value={parameters.num_loads}
-                  onChange={handleChange}
-                  required
-                />
-                <Form.Text className="text-muted">Between 1 and 5 loads</Form.Text>
-              </Form.Group>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+            {isParsingText ? (
+              <div className="text-center mt-3">
+                <div className="spinner-border spinner-border-sm me-2" role="status">
+                  <span className="visually-hidden">Parsing...</span>
+                </div>
+                <span>Parsing input...</span>
+              </div>
+            ) : null}
+          </Card.Body>
+        </Card>
+      )}
 
-      {/* Scenario Characteristics -------------------------------------- */}
-      <Card className="mb-4">
-        <Card.Header className="d-flex align-items-center">
-          <Sliders className="me-2" size={20} />
-          <span>Scenario Characteristics</span>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Peak Load (MW)</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="peak_load"
-                  min="10"
-                  max="1000"
-                  value={parameters.peak_load}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Voltage Profile</Form.Label>
-                <Form.Select
-                  name="voltage_profile"
-                  value={parameters.voltage_profile}
-                  onChange={handleChange}
-                >
-                  <option value="flat">Flat</option>
-                  <option value="varied">Varied</option>
-                  <option value="stressed">Stressed</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Reliability Level</Form.Label>
-                <Form.Select
-                  name="reliability_level"
-                  value={parameters.reliability_level}
-                  onChange={handleChange}
-                >
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3">
-                <Form.Label>Congestion Level</Form.Label>
-                <Form.Select
-                  name="congestion_level"
-                  value={parameters.congestion_level}
-                  onChange={handleChange}
-                >
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+      {/* Parameter Inputs (only shown when text input mode is off) */}
+      {!isTextInputMode && (
+        <div>
+          {/* Network Parameters -------------------------------------------- */}
+          <Card className="mb-4">
+            <Card.Header className="d-flex align-items-center">
+              <Grid className="me-2" size={20} />
+              <span>Network Parameters</span>
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                {/* Buses ----------------------------------------------------- */}
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Number of Buses</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="num_buses"
+                      min="2"
+                      max="10"
+                      value={parameters.num_buses}
+                      onChange={handleChange}
+                      required
+                    />
+                    <Form.Text className="text-muted">Between 2 and 10 buses</Form.Text>
+                  </Form.Group>
+                </Col>
 
-      {/* Advanced Options (RAG) ---------------------------------------- */}
+                {/* Generators ---------------------------------------------- */}
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Number of Generators</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="num_generators"
+                      min="1"
+                      max="5"
+                      value={parameters.num_generators}
+                      onChange={handleChange}
+                      required
+                    />
+                    <Form.Text className="text-muted">Between 1 and 5 generators</Form.Text>
+                  </Form.Group>
+                </Col>
+
+                {/* Loads ---------------------------------------------------- */}
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Number of Loads</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="num_loads"
+                      min="1"
+                      max="5"
+                      value={parameters.num_loads}
+                      onChange={handleChange}
+                      required
+                    />
+                    <Form.Text className="text-muted">Between 1 and 5 loads</Form.Text>
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+
+          {/* Scenario Characteristics -------------------------------------- */}
+          <Card className="mb-4">
+            <Card.Header className="d-flex align-items-center">
+              <Sliders className="me-2" size={20} />
+              <span>Scenario Characteristics</span>
+            </Card.Header>
+            <Card.Body>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Peak Load (MW)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="peak_load"
+                      min="10"
+                      max="1000"
+                      value={parameters.peak_load}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Voltage Profile</Form.Label>
+                    <Form.Select
+                      name="voltage_profile"
+                      value={parameters.voltage_profile}
+                      onChange={handleChange}
+                    >
+                      <option value="flat">Flat</option>
+                      <option value="varied">Varied</option>
+                      <option value="stressed">Stressed</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Reliability Level</Form.Label>
+                    <Form.Select
+                      name="reliability_level"
+                      value={parameters.reliability_level}
+                      onChange={handleChange}
+                    >
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Congestion Level</Form.Label>
+                    <Form.Select
+                      name="congestion_level"
+                      value={parameters.congestion_level}
+                      onChange={handleChange}
+                    >
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </div>
+      )}
+
+      {/* Advanced Options (RAG) - always shown ------------------------------------ */}
       {advancedMode && (
         <Card className="mb-4">
           <Card.Header className="d-flex align-items-center">

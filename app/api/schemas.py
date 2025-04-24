@@ -75,6 +75,26 @@ class ValidationResponse(BaseModel):
     validation_details: Dict[str, Any]
 
 
+class TextParseRequest(BaseModel):
+    """Request model for parsing natural language into scenario parameters."""
+    text: str = Field(
+        ...,
+        description="Natural language description of the desired scenario"
+    )
+
+
+class TextParseResponse(BaseModel):
+    """Response model for text parsing results."""
+    parameters: Dict[str, Any] = Field(
+        ...,
+        description="Extracted parameters from the text description"
+    )
+    original_text: str = Field(
+        ..., 
+        description="Original text that was parsed"
+    )
+
+
 class PromptTemplateParameter(BaseModel):
     """Parameter definition for a prompt template."""
     name: str

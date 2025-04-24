@@ -14,7 +14,9 @@ from app.api.schemas import (
     ValidationRequest,
     ValidationResponse,
     PromptTemplateRequest,
-    PromptTemplateResponse
+    PromptTemplateResponse,
+    TextParseRequest,
+    TextParseResponse
 )
 from app.services.pinn_service import pinn_service
 from app.services.opendss_service import opendss_service
@@ -24,6 +26,27 @@ from app.core.utils import save_json
 from app.config import settings
 
 router = APIRouter()
+
+@router.post("/scenarios/parse-text", response_model=TextParseResponse, tags=["Scenarios"])
+async def parse_scenario_text(request: TextParseRequest):
+    """
+    Parse natural language text into scenario parameters using prompt tuning.
+    """
+    try:
+        # Use prompt service to interpret the text
+        parsed_parameters = prompt_service.parse_text_to_parameters(
+            text=request.text
+        )
+        
+        return TextParseResponse(
+            parameters=parsed_parameters,
+            original_text=request.text
+        )
+    except Exception as e:
+        import traceback
+        print(f"Error parsing scenario text: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/scenarios/generate", response_model=ScenarioResponse, tags=["Scenarios"])
 async def generate_scenario(request: ScenarioRequest):
