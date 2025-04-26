@@ -8,6 +8,7 @@
     display: inline-block;
     margin-bottom: 2rem;
     padding-bottom: 0.5rem;
+    color: var(--primary-gold);
   }
   
   .scenario-detail-page h1::after {
@@ -18,6 +19,22 @@
     width: 40%;
     height: 3px;
     background: linear-gradient(90deg, var(--primary-gold), transparent);
+  }
+  
+  .scenario-detail-page h2,
+  .scenario-detail-page h3,
+  .scenario-detail-page h4,
+  .scenario-detail-page h5,
+  .scenario-detail-page h6 {
+    color: var(--primary-gold-light);
+  }
+  
+  .scenario-detail-page p {
+    color: var(--white);
+  }
+  
+  .scenario-detail-page strong {
+    color: var(--primary-gold-light);
   }
   
   /* Tabs styling */
@@ -83,6 +100,10 @@
     padding: 1.25rem;
   }
   
+  .scenario-detail-page .card-body p {
+    color: var(--white);
+  }
+  
   .scenario-detail-page .card-footer {
     background-color: rgba(30, 30, 30, 0.8);
     border-top: 1px solid rgba(212, 175, 55, 0.2);
@@ -109,51 +130,103 @@
   
   /* Status badges */
   .badge-success {
-    background-color: rgba(75, 181, 67, 0.2);
-    color: #4BB543;
+    background-color: rgba(75, 181, 67, 0.3);
+    color: #6bff8d;
     border: 1px solid #4BB543;
   }
   
   .badge-danger {
-    background-color: rgba(220, 53, 69, 0.2);
-    color: #DC3545;
+    background-color: rgba(220, 53, 69, 0.3);
+    color: #ff6b6b;
     border: 1px solid #DC3545;
   }
   
   .badge-secondary {
-    background-color: rgba(108, 117, 125, 0.2);
-    color: #6c757d;
+    background-color: rgba(108, 117, 125, 0.3);
+    color: #e2e8f0;
     border: 1px solid #6c757d;
   }
   
   .badge-primary {
-    background-color: rgba(212, 175, 55, 0.2);
-    color: var(--primary-gold);
+    background-color: rgba(212, 175, 55, 0.3);
+    color: var(--primary-gold-light);
     border: 1px solid var(--primary-gold);
   }
   
   /* Tables styling */
   .scenario-detail-page .table {
-    color: var(--off-white);
+    color: var(--white);
     font-size: 0.9rem;
     margin-bottom: 1rem;
+    background-color: transparent !important;
+  }
+  
+  .scenario-detail-page .table thead {
+    background-color: rgba(30, 30, 30, 0.9);
   }
   
   .scenario-detail-page .table thead th {
-    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+    border-bottom: 2px solid var(--primary-gold);
     font-weight: 600;
-    color: var(--primary-gold-light);
-    padding: 0.5rem;
+    color: var(--white);
+    padding: 0.75rem 0.5rem;
+    background-color: rgba(212, 175, 55, 0.15);
+    font-size: 1rem;
+  }
+  
+  .scenario-detail-page .table tbody {
+    background-color: rgba(30, 30, 30, 0.7);
   }
   
   .scenario-detail-page .table tbody td {
-    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-    padding: 0.5rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 0.75rem 0.5rem;
+    color: var(--white);
+    font-size: 0.95rem;
+    background-color: transparent !important;
+  }
+  
+  /* Override any Bootstrap table backgrounds */
+  .scenario-detail-page .table>:not(caption)>*>* {
+    background-color: transparent !important;
+    color: var(--white);
+  }
+  
+  /* Power summary specific styles */
+  .scenario-detail-page .card h6 {
+    color: var(--primary-gold);
+    margin: 1rem 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .scenario-detail-page .card .table {
+    margin-top: 0.5rem;
+  }
+  
+  .scenario-detail-page .card .table td {
+    color: var(--white) !important;
+    font-family: var(--font-monospace);
+  }
+  
+  .scenario-detail-page .card .table td:nth-child(3),
+  .scenario-detail-page .card .table td:nth-child(4) {
+    font-weight: 500;
+  }
+  
+  .scenario-detail-page .text-muted.small {
+    color: var(--off-white) !important;
+    opacity: 0.9;
+  }
+  
+  /* Table hover effects */
+  .scenario-detail-page .table tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.1) !important;
   }
   
   .scenario-detail-page .table-sm th,
   .scenario-detail-page .table-sm td {
-    padding: 0.3rem;
+    padding: 0.5rem;
   }
   
   /* Visualization tab styles */
@@ -193,33 +266,43 @@
   /* Validation tab styles */
   .validation-tab .alert {
     margin-bottom: 1.5rem;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.3);
     border-width: 1px;
     border-radius: var(--border-radius-md);
   }
   
   .validation-tab .alert-success {
     border-color: #4BB543;
-    color: #4BB543;
+    color: #6bff8d;
   }
   
   .validation-tab .alert-danger {
     border-color: #DC3545;
-    color: #DC3545;
+    color: #ff6b6b;
   }
   
   .validation-tab .alert-warning {
     border-color: #FFD700;
-    color: #FFD700;
+    color: #ffe566;
+  }
+  
+  .validation-tab h6 {
+    color: var(--primary-gold-light);
+    margin-bottom: 0.75rem;
   }
   
   .validation-tab ul.small {
     margin-bottom: 0;
     padding-left: 1.5rem;
+    color: var(--white);
   }
   
   .validation-tab ul.small li {
     margin-bottom: 0.25rem;
+  }
+  
+  .validation-tab ul.small li.text-danger {
+    color: #ff6b6b !important;
   }
   
   .text-danger {
